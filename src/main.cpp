@@ -1,6 +1,12 @@
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
 
+#include <ESPAsyncWebServer.h>
+#include <LittleFS.h>
+
+AsyncWebServer server(80);
+
+
 #define WIFI_SSID "SEU_WIFI"
 #define WIFI_PASSWORD "SUA_SENHA"
 
@@ -103,6 +109,11 @@ void setup() {
   }
   Serial.println("\nWiFi conectado!");
 
+  if (!LittleFS.begin(true)) {
+    Serial.println("Erro ao montar LittleFS!");
+    return;
+  }
+
   config.api_key = API_KEY;
   config.database_url = DATABASE_URL;
 
@@ -111,6 +122,11 @@ void setup() {
 
   carregarHighScore();
   Serial.println("Highscore atual: " + String(highScore));
+
+  server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+
+  server.begin();
+  Serial.println("Servidor web iniciado!");
 }
 
 void loop() {
